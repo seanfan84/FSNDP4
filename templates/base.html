@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/Article">
+<head>
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='bootstrap.css')}}">
+<title>
+		
+</title>
+</head>
+<body>
+
+<div class="container-fluid">
+
+</div>
+
+	<div class = 'flash'>
+		      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+</div>
+
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-8 col-xs-8"><a href="/">CATALOG APP</a></div>
+		<div class="col-md-4 col-xs-4">
+		{%if 'user' in login_session %}
+		<a href="/logout">Logout</a>
+		{%else%}
+		<a href="/login">Login</a>
+		{%endif%}
+			
+		</div>
+	</div>	
+
+	<div class="row">
+		<div class="col-md-3 col-xs-3">
+		{% block sidebar %}
+		<div class="row">
+			Category:
+		</div>
+		{% for entry in categories %}
+		<div class="row">
+			<a  href="{{url_for('showProducts',category_name=entry.name)}}">
+				{#<img alt="offer banner1" class="category-banner img-responsive"src="{{entry.image}}">#}
+				{{entry.name}}
+			</a>
+		</div>
+		{% endfor %}
+		{% endblock %}</div>
+		<div class="col-md-9 col-xs-9">
+			<div class="col-md-12">
+			{% block content %}
+			Welcome to Engineering Algorithms<br>
+			Engineering Algoritms is a state of art automatic building design system.<!--  powder by artificial intelligence. --><br>
+
+			Please select category to get started.
+			You need to <a href="/login">login</a>  to see more details or to create new building types.
+
+			{% endblock %}
+			</div>
+		</div>
+	</div>
+{#
+	<div class="row">
+		<div class="col-md-12">
+			Privacy policy |
+			About Me |
+			Disclaimers |
+			Contact Me |
+			Developers |
+			Cookie statement |
+			Mobile view
+		</div>
+	</div>
+#}
+</div>
+
+</body>
+</html>

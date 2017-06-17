@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-12">
+		
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-10">Path:{{path}}</div>
+	<div class="col-md-2"><a href="{{request.path}}/edit"><button>Edit</button></a></div>	
+</div>
+<div class="row">
+	<div class="col-md-6">Info</div>
+	<div class="col-md-6"><img src="http://placehold.it/150x150"></div>
+</div>
+<div class = "row" id="description">
+	<div class="col-md-12">Full description</div>
+</div>
+
+{% endblock %}

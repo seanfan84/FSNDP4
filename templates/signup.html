@@ -1,0 +1,17 @@
+{%extends "baseClean.html" %}
+{%block content%}
+<h2>User sign Up</h2>
+<form method="post">
+	<input type="text" name="username" value="{{username}}" placeholder="Username"><br>
+	<label>Hint: Use at lease 8 digits, use at least an upper case letter, a lower case letter and a number.</label><br>
+	<label class="error_username">{{error_username}}</label><br>
+	<input type="text" name="password" value="" placeholder="Password"><br>
+	<label>Hint: Use at lease 8 digits, use at least an upper case letter, a lower case letter and a number.</label><br>
+	<label class="error_username">{{error_username}}</label><br>
+	<input type="submit" value = "Submit">
+	<a href="{{request.referrer}}"><button type="button">Back</button></a>
+
+</form>
+
+{%endblock%}
+

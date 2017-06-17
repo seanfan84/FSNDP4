@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block sidebar %}
+<ul>
+{% for entry in catelog %}
+<li><a href="{{url_for('catelog')}}\catelog\{{entry.id}}">{{entry.name}}</a></li>
+{% end for %}
+</ul>
+{% endblock %}

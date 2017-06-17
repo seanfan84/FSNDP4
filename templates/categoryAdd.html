@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+Add New Category:
+<form method="post">
+	<input type="text" name="CategoryName" value ="" placeholder="name"><br>
+	<input type="text" name="imageUrl" value="" placeholder="image url">200x150 pixels<br>
+	<textarea name="description" placeholder="description"></textarea>  <br>
+	<input type="submit"><a href="">Cancel</a>
+</form>
+{% endblock %}

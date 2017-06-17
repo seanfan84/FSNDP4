@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/Article">
+<head>
+	<meta charset="utf-8">
+	<meta lang="eng">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}">
+	
+	<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='bootstrap.css')}}">
+
+
+	{%block head%}
+	{%endblock%}
+
+	<title>
+
+	</title>
+</head>
+<body>
+
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12"><a href="/">BANNER</a></div>
+		</div>
+
+		<div class="row" id="header">
+			<div class="col-md-8">Headers</div>
+			<div class="col-md-4">Search</div>
+
+		</div>
+
+
+		<div class="row">
+			<div class="col-md-12">
+				{% block content %}
+				Notification Area
+				{% endblock %}
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				Privacy policy |
+				About Me |
+				Disclaimers |
+				Contact Me |
+				Developers |
+				Cookie statement |
+				Mobile view
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
