@@ -294,7 +294,6 @@ def fbconnect():
 
 @app.route("/")
 def showHome():
-    # return "This page will show all my category"
     for i in login_session:
         print str(i) + ":" + str(login_session[i])
     return render_template("base.html", categories=loadCategory())
@@ -309,42 +308,49 @@ def newCategory():
             "categoryEdit.html", category=None,
             title="New Category", delete=False, **generalData)
     if request.method == 'POST':
-        crud.newCategory(request.form['CategoryName'])
-        flash('New Catalog Created')
+        category = crud.newCategory(request.form['CategoryName'])
+        if category:
+            flash('new category created')
+        else:
+            flash('Failed to create new category')
         return redirect(url_for('showHome'))
 
 
-@app.route("/<string:category_name>/editcategory/", methods=['GET', 'POST'])
+@app.route("/<string:category_name>/edit/", methods=['GET', 'POST'])
 def editCategory(category_name):
     print category_name
-    # return "This page will be for editing category %s" % category_id
     if request.method == 'GET':
-        category = falsedata.category  # crud.getResaurantById(category_id)
+        category = crud.getCategoryByName(category_name)
         loadCategory()
         return render_template(
             "categoryEdit.html", category=category,
-            title="Edit Category", delete=True, **generalData)
+            title="EDIT Category", delete=True, **generalData)
     if request.method == 'POST':
-        print 123
-        crud.editCategory(category_name, request.form['CategoryName'])
-        # flash('Catalog Successfully Edited')
+        category = crud.editCategory(
+            category_name, request.form['CategoryName'])
+        if category:
+            flash("%s successfully updated to %s" % (
+                category_name, category.name))
         return redirect(url_for('showHome'))
 
 
-@app.route("/category/<int:category_id>/delete/", methods=['GET', 'POST'])
-def deleteCategory(category_id):
+@app.route("/<string:category_name>/delete/", methods=['GET', 'POST'])
+def deleteCategory(category_name):
     # return "This page will be for deleting category %s" % category_id
     if request.method == 'GET':
         return render_template(
-            "deleteCatalog.html", id=category_id, **generalData)
+            "categoryDelete.html", title="DELETE category",
+            name=category_name, **generalData)
     if request.method == 'POST':
-        crud.deleteCatalog(category_id)
-        flash('Catalog Successfully Deleted')
+        if crud.deleteCategoryByName(category_name):
+            flash('Category %s Successfully Deleted' % category_name)
+        else:
+            flash('Failed to delete category %s' % category_name)
         return redirect(url_for('showHome'))
 
 
-@app.route("/<string:category_name>/products/",defaults={'category_id':0})
-@app.route("/category/<int:category_id>/",defaults={'category_name':''})
+@app.route("/<string:category_name>/products/", defaults={'category_id': 0})
+@app.route("/category/<int:category_id>/", defaults={'category_name': ''})
 def showProducts(category_name, category_id):
     # return "This page is the menu for category %s" % category_id
     # products = falsedata.products
@@ -354,9 +360,8 @@ def showProducts(category_name, category_id):
     if category_id == 0:
         category = crud.getCategoryByName(category_name)
         if category:
-            print category.id,category.name
+            print category.id, category.name
             products = crud.showProducts(category.id)
-            pass
     elif category_name == '':
         products = crud.showProducts(category_id)
     else:
@@ -366,9 +371,14 @@ def showProducts(category_name, category_id):
                            category_id=category_id, **generalData)
 
 
-@app.route("/<string:category_name>/<string:product_name>")
-@app.route("/product/<string:product_name>")
-@app.route("/product/<int:product_id>")
+@app.route("/<string:category_name>/<string:product_name>",
+    defaults={"product_id": 0})
+@app.route("/product/<string:product_name>",
+        defaults={"product_id": 0, "category_name": None}
+        )
+@app.route("/product/<int:product_id>",
+        defaults={"product_name": 0, "category_name": None}
+        )
 def showProductDetail(product_id, category_id):
     # return "This page is the menu for category %s" % category_id
     product = falsedata.product  # crud.showProduct(category_id)
@@ -386,15 +396,19 @@ def newProduct(category_name):
     if request.method == 'GET':
         return render_template("productEdit.html", **generalData)
     if request.method == 'POST':
-        name = request.form['name']
-        description = request.form['description']
-        price = request.form['price']
-        new = crud.newProductItem(name, description, price, category_name, 1)
-        if new:
-            flash('Product Item Created')
-        else:
-            flash('Failed to create the product')
-        return redirect(url_for('showProducts', category_name=category_name))
+        category = crud.getCategoryByName(category_name)
+        if category:
+            name = request.form['name']
+            description = request.form['description']
+            price = request.form['price']
+            new = crud.newProduct(name, description, price, category.id, 1)
+            if new:
+                flash('Product Item Created')
+            else:
+                flash('Failed to create the product')
+            return redirect(
+                url_for('showProducts', category_name=category_name))
+        return redirect(url_for('showError'))
 
 
 @app.route("/category/<int:category_id>/product/<int:product_id>/edit/",
@@ -448,9 +462,12 @@ def showProductDetailJson(category_id, product_id):
     return jsonify(category=item.serialize)
 
 
-@app.route("/123")
-def test123():
-    return 'Not Autherized, Click <a href="%s">Here</a> to go back'%(request.referrer)
+@app.route("/error/")
+def showError():
+    return 'Oops, something did not go right,<br>\
+    The resource you request does not exist,<br>\
+    Click <a href="%s">Here</a> to go back<br>\
+    </pre>' % (request.referrer)
 
 
 def loadCategory():

@@ -52,7 +52,7 @@ class Product(Base):
     description = Column(String(250))
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship(Category)
-    price = Column(String,nullable=True)
+    price = Column(String, nullable=True)
     owner_id = Column(Integer, ForeignKey('user.id'))
     owner = relationship(User)
     UniqueConstraint(name)

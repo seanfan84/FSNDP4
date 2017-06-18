@@ -16,14 +16,22 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
+# returns all categories, used in sidebars
 def showCategory():
+    '''return all categories'''
     ls = session.query(Category).all()
     # for i in ls:
     #     print i.__dict__
     return ls
 
 
+# makes a new category
 def newCategory(name):
+    '''This function will strip any leading and tailing space tab newline
+    '''
+    name = name.strip()
+    if name == '':
+        return None
     new = Category(name=name.lower(),)
     try:
         session.add(new)
@@ -33,10 +41,12 @@ def newCategory(name):
         session.rollback()
         return None
 
+
 def getAllCategories():
     category = session.query(Category).all()
     if any(category):
-        return category 
+        return category
+
 
 def getCategoryByID(id):
     category = session.query(Category).filter_by(id=id)
@@ -51,18 +61,28 @@ def getCategoryByName(name):
 
 
 def editCategory(old_name, name):
+    """Rename category, stripped and name must not be empty string
+
+    Keyword Arguments:
+    old_name -- string
+    name     -- string
+    """
     edit = session.query(Category).filter_by(name=old_name)
+    name = name.strip()
     try:
-        if edit.one_or_none():
+        if edit.one() and name != "":
             edit = edit.one()
+            print edit.__dict__
             edit.name = name
-            session.add(edit)
+            # session.add(edit)
             session.commit()
             print "Success: Edit Category (%s) successful" % edit.id
             return edit
         else:
             print "Failure: Category (%s) NOT found" % id
+            return None
     except Exception:
+        print Exception.__dict__
         session.rollback()
         return None
 
@@ -83,16 +103,41 @@ def deleteCategory(id):
         session.rollback()
 
 
+# TODO: impletment casade delete
+def deleteCategoryByName(name):
+    """Select category by name, if there is only one, delete it, return bool
+    True - for success
+    False - for faillure
+    """
+    delete = session.query(Category).filter_by(name=name)
+    try:
+        if delete.one():
+            delete = delete.one()
+            session.delete(delete)
+            session.commit()
+            print "Success: delete Category (%s) successful" % (name)
+            return True
+        else:
+            print "Failure: Category (%s) NOT found" % (name)
+            return False
+    except Exception:
+        print "rollback?"
+        session.rollback()
+        return False
+
+
 def showProducts(category_id=None):
     if category_id:
-        menuItems = (
+        ls = (
             session.query(Product)
             .filter_by(category_id=category_id)
         ).all()
+        for i in ls:
+            print i.id, i.name
     else:
-        menuItems = session.query(Product).all()
+        ls = session.query(Product).all()
     print "Show MenuItems: Successful"
-    return menuItems
+    return ls
 
 
 def showProductById(id):
@@ -103,7 +148,7 @@ def showProductById(id):
     return menuItem
 
 
-def newProduct(name, description, category_id, owner_id):
+def newProduct(name, description, price, category_id, owner_id):
     '''name description category_id owner_id'''
     new = Product(
         name=name.lower(),
@@ -122,8 +167,7 @@ def newProduct(name, description, category_id, owner_id):
         return None
 
 
-
-def editProduct(id, name, description, category_id, owner_id):
+def editProduct(id, name, price, description, category_id, owner_id):
     edit = session.query(Product).filter_by(id=id)
     if any(edit):
         edit = edit.one()

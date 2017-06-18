@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-xs-12 col-md-12">
-	<a href="{{url_for('newProduct',category_name=category_name)}}"><button>New Product</button></button></a>
+<div class="row">
+	<div class="col-xs-12 col-md-12">
+		<a href="{{url_for('newProduct',category_name=category_name)}}">
+			<button>New Product</button>
+		</a>
+	</div>
 </div>
 {%- for entry in products -%}
-<div class="col-md-3"><a href="{{url_for('showProductDetail',category_id=category_id,product_id=entry.id)}}">{{entry.type}}{#<img class="img-responsive" src="{{entry.image}}">#}</a></div>
+<div class="col-md-12">
+<a href="{{url_for('showProductDetail',category_id=category_id,product_id=entry.id)}}">{{entry.name}}{#<img class="img-responsive" src="{{entry.image}}">#}</a>
+</div>
 {%- endfor -%}
-
 {% endblock %}

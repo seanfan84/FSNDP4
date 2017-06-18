@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+{{title}}:
+<form method="post">
+	<p>Do you with to delete catelog {{name}}?</p>
+	<input type="submit" value="Confirm"><a href="{{request.referrer}}">BACK</a>
+</form>
+{% endblock %}

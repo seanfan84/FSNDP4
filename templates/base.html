@@ -13,18 +13,16 @@
 
 </div>
 
-	<div class = 'flash'>
-		      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-          
+<div class = 'flash'>
+	{%- with messages = get_flashed_messages() -%}
+        {%- if messages -%}
         <ul>
-        {% for message in messages %}
+    		{%- for message in messages -%}
             <li> <strong> {{ message }} </strong> </li>
-        {% endfor %}
+        	{%- endfor -%}
         </ul>
-        {% endif %}
-    {% endwith %}
-
+        {%- endif -%}
+    {%- endwith -%}
 </div>
 
 
@@ -65,6 +63,8 @@
 			Please select category to get started.
 			You need to <a href="/login">login</a>  to see more details or to create new building types.
 
+			TODO:
+			implement casade delete
 			{% endblock %}
 			</div>
 		</div>
