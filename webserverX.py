@@ -350,7 +350,7 @@ def deleteCategory(category_name):
 
 
 @app.route("/<string:category_name>/products/", defaults={'category_id': 0})
-@app.route("/category/<int:category_id>/", defaults={'category_name': ''})
+@app.route("/category<int:category_id>/", defaults={'category_name': ''})
 def showProducts(category_name, category_id):
     # return "This page is the menu for category %s" % category_id
     # products = falsedata.products
@@ -372,17 +372,16 @@ def showProducts(category_name, category_id):
 
 
 @app.route("/<string:category_name>/<string:product_name>",
-    defaults={"product_id": 0})
-@app.route("/product/<string:product_name>",
-        defaults={"product_id": 0, "category_name": None}
-        )
+           defaults={"product_id": 0})
 @app.route("/product/<int:product_id>",
-        defaults={"product_name": 0, "category_name": None}
-        )
-def showProductDetail(product_id, category_id):
+           defaults={"product_name": None, "category_name": None})
+def showProductDetail(product_id, product_name, category_name):
     # return "This page is the menu for category %s" % category_id
-    product = falsedata.product  # crud.showProduct(category_id)
-
+    # product = falsedata.product
+    if product_id != 0:
+        product = crud.getProductById(product_id)
+    else:
+        product = crud.getProductByName(product_name)
     return render_template(
         "productDetail.html", product=product, **generalData
     )

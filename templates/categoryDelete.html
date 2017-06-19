@@ -3,6 +3,7 @@
 {{title}}:
 <form method="post">
 	<p>Do you with to delete catelog {{name}}?</p>
+	<p>This will also delete its child products.</p>
 	<input type="submit" value="Confirm"><a href="{{request.referrer}}">BACK</a>
 </form>
 {% endblock %}

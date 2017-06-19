@@ -73,7 +73,7 @@ def editCategory(old_name, name):
         if edit.one() and name != "":
             edit = edit.one()
             print edit.__dict__
-            edit.name = name
+            edit.name = name.lower()
             # session.add(edit)
             session.commit()
             print "Success: Edit Category (%s) successful" % edit.id
@@ -103,7 +103,6 @@ def deleteCategory(id):
         session.rollback()
 
 
-# TODO: impletment casade delete
 def deleteCategoryByName(name):
     """Select category by name, if there is only one, delete it, return bool
     True - for success
@@ -113,15 +112,20 @@ def deleteCategoryByName(name):
     try:
         if delete.one():
             delete = delete.one()
+            products = session.query(Product).filter_by(
+                category_id=delete.id).all()
+            if any(products):
+                for each in products:
+                    session.delete(each)
             session.delete(delete)
             session.commit()
-            print "Success: delete Category (%s) successful" % (name)
+            print "Success: delete category (%s) and its containing products successful" % (name)
             return True
         else:
             print "Failure: Category (%s) NOT found" % (name)
             return False
     except Exception:
-        print "rollback?"
+        print "Something did not go right. Contact Admin."
         session.rollback()
         return False
 
@@ -141,11 +145,19 @@ def showProducts(category_id=None):
 
 
 def showProductById(id):
-    menuItem = session.query(Product).filter_by(id=id)
-    if any(menuItem):
-        menuItem = menuItem.one()
-    print "getMenuByID: Successful"
-    return menuItem
+    try:
+        product = session.query(Product).filter_by(id=id).one()
+    except Exception:
+        product = None
+    return product
+
+
+def showProductByName(name):
+    try:
+        product = session.query(Product).filter_by(name=name).one()
+    except Exception:
+        product = None
+    return product
 
 
 def newProduct(name, description, price, category_id, owner_id):
