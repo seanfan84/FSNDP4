@@ -64,7 +64,8 @@ class Product(Base):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'category_id': self.category_id
+            'category_name': self.category.name,
+            'owner_name': self.owner.username
         }
 
 

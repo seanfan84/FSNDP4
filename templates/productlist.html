@@ -10,7 +10,7 @@
 </div>
 {%- for entry in products -%}
 <div class="col-md-12">
-<a href="{{url_for('showProductDetail',category_id=category_id,product_id=entry.id)}}">{{entry.name}}{#<img class="img-responsive" src="{{entry.image}}">#}</a>
+<a href="{{url_for('showProductDetail',category_name=category_name,product_name=entry.name)}}">{{entry.name.capitalize()}}{#<img class="img-responsive" src="{{entry.image}}">#}</a>
 </div>
 {%- endfor -%}
 {% endblock %}

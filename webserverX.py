@@ -296,14 +296,14 @@ def fbconnect():
 def showHome():
     for i in login_session:
         print str(i) + ":" + str(login_session[i])
-    return render_template("base.html", categories=loadCategory())
+    return render_template("base.html", categories=loadCategories())
 
 
 @app.route('/category/new/', methods=['get', 'post'])
 def newCategory():
     # return "This page will be for making a new category"
     if request.method == 'GET':
-        loadCategory()
+        loadCategories()
         return render_template(
             "categoryEdit.html", category=None,
             title="New Category", delete=False, **generalData)
@@ -321,7 +321,7 @@ def editCategory(category_name):
     print category_name
     if request.method == 'GET':
         category = crud.getCategoryByName(category_name)
-        loadCategory()
+        loadCategories()
         return render_template(
             "categoryEdit.html", category=category,
             title="EDIT Category", delete=True, **generalData)
@@ -350,7 +350,7 @@ def deleteCategory(category_name):
 
 
 @app.route("/<string:category_name>/products/", defaults={'category_id': 0})
-@app.route("/category<int:category_id>/", defaults={'category_name': ''})
+@app.route("/category <int:category_id>/", defaults={'category_name': ''})
 def showProducts(category_name, category_id):
     # return "This page is the menu for category %s" % category_id
     # products = falsedata.products
@@ -366,7 +366,7 @@ def showProducts(category_name, category_id):
         products = crud.showProducts(category_id)
     else:
         products = crud.showProducts()
-    loadCategory()
+    loadCategories()
     return render_template("productlist.html", products=products,
                            category_id=category_id, **generalData)
 
@@ -382,6 +382,7 @@ def showProductDetail(product_id, product_name, category_name):
         product = crud.getProductById(product_id)
     else:
         product = crud.getProductByName(product_name)
+    loadCategories()
     return render_template(
         "productDetail.html", product=product, **generalData
     )
@@ -410,66 +411,81 @@ def newProduct(category_name):
         return redirect(url_for('showError'))
 
 
-@app.route("/category/<int:category_id>/product/<int:product_id>/edit/",
+@app.route("/<string:category_name>/<string:product_name>/edit/",
            methods=['get', 'post'])
-def editProduct(category_id, product_id):
-    # return "This page is for editing menu item %s " % product_id
+def editProduct(category_name, product_name):
     if request.method == 'GET':
-        # menuItem = crud.getProductById(product_id)
-        menuItem = falsedata.product
-        return render_template("productEdit.html", item=menuItem,
-                               category_id=category_id, **generalData)
+        product = crud.getProductByName(product_name)
+        if not product or category_name != product.category.name:
+            return redirect(url_for("showError"))
+        return render_template("productEdit.html",
+                               product=product,
+                               **generalData)
     if request.method == 'POST':
+        product = crud.getProductByName(product_name)
+        if not product or category_name != product.category.name:
+            return redirect(url_for("showError"))
         name = request.form['name']
         description = request.form['description']
         price = request.form['price']
-        course = request.form['course']
-        crud.editProductItem(product_id, name, description, price, course)
+        crud.editProduct(product, name, price, description)
         flash('Product Item Successfully Edited')
-        return redirect(url_for('showProduct', category_id=category_id))
+        return redirect(url_for('showProducts', category_name=category_name))
 
 
-@app.route("/category/<int:category_id>/menu/<int:product_id>/delete/",
+@app.route("/<string:category_name>/<string:product_name>/delete/",
            methods=['get', 'post'])
-def deleteProduct(category_id, product_id):
-    # return "This page is for deleting menu item %s" % product_id
-    if request.method == "GET":
-        return render_template("deleteProductItem.html",
-                               category_id=category_id, id=product_id)
-    if request.method == "POST":
-        crud.deleteProductItem(product_id)
-        flash('Product Item Successfully Delete')
-        return redirect(url_for('showProduct', category_id=category_id))
+def deleteProduct(category_name, product_name):
+    if request.method == 'GET':
+        product = crud.getProductByName(product_name)
+        if not product or category_name != product.category.name:
+            return redirect(url_for("showError"))
+        return render_template("productDelete.html", title="DELETE category",
+                               name=product_name, **generalData)
+    if request.method == 'POST':
+        product = crud.getProductByName(product_name)
+        if not product and category_name != product.category.name:
+            return redirect(url_for("showError"))
+        # TODO
+        if crud.deleteProduct(product):
+            flash('Product %s Successfully Deleted' % product_name)
+        else:
+            flash('Failed to delete Product %s' % product_name)
+        return redirect(url_for('showHome'))
 
 
 # Define API End Point
-@app.route("/category/json/")
-def showCatalogJson():
-    category = crud.showCatalog()
+@app.route("/categories/json/")
+def showCategoriesJason():
+    category = crud.getAllCategories()
     return jsonify(category=[r.serialize for r in category])
 
 
-@app.route("/category/<int:category_id>/json/")
-def showProductsJson(category_id):
-    products = crud.showProducts(category_id)
+@app.route("/<string:category_name>/products/json/")
+def showProductsJson(category_name):
+    products = crud.showProductsByCategoryName(category_name)
     return jsonify(products=[i.serialize for i in products])
 
 
-@app.route("/category/<int:category_id>/<int:product_id>/json/")
-def showProductDetailJson(category_id, product_id):
-    item = crud.getProductById(product_id)
-    return jsonify(category=item.serialize)
+@app.route("/<string:category_name>/<string:product_name>/json/")
+def showProductDetailJson(category_name, product_name):
+    item = crud.getProductByName(product_name)
+    print item.owner_id
+    return jsonify(detail=item.serialize)
 
 
 @app.route("/error/")
 def showError():
+    # return 'Oops, something did not go right,<br>\
+    # The resource you request does not exist,<br>\
+    # Click <a href="%s">Here</a> to go back<br>\
+    # </pre>' % (request.referrer)
     return 'Oops, something did not go right,<br>\
     The resource you request does not exist,<br>\
-    Click <a href="%s">Here</a> to go back<br>\
-    </pre>' % (request.referrer)
+    Click <a href="/">Here</a> to go to home page<br>\
+    </pre>'
 
-
-def loadCategory():
+def loadCategories():
     categories = crud.getAllCategories()
     if categories:
         generalData['categories'] = categories

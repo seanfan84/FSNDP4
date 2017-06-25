@@ -8,7 +8,7 @@
 	<input type="submit"><a href="{{request.referrer}}">Cancel</a>
 	{% if delete == true%}
 	<a href="{{url_for('deleteCategory', category_name=category.name)}}">Delete</a>
-	<button>Delete</button>
-	{% endif %}
+<!-- 	<button type="button">Delete</button>
+ -->	{% endif %}
 </form>
 {% endblock %}

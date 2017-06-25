@@ -144,7 +144,20 @@ def showProducts(category_id=None):
     return ls
 
 
-def showProductById(id):
+def showProductsByCategoryName(category_name=''):
+    category = getCategoryByName(category_name)
+    if category:
+        ls = (
+            session.query(Product)
+            .filter_by(category_id=category.id)
+        ).all()
+    else:
+        ls = session.query(Product).all()
+    print "Show MenuItems: Successful"
+    return ls
+
+
+def getProductById(id):
     try:
         product = session.query(Product).filter_by(id=id).one()
     except Exception:
@@ -152,7 +165,7 @@ def showProductById(id):
     return product
 
 
-def showProductByName(name):
+def getProductByName(name):
     try:
         product = session.query(Product).filter_by(name=name).one()
     except Exception:
@@ -162,9 +175,12 @@ def showProductByName(name):
 
 def newProduct(name, description, price, category_id, owner_id):
     '''name description category_id owner_id'''
+    if (not name) or name.strip() == '':
+        return None
     new = Product(
         name=name.lower(),
         description=description,
+        price=price,
         category_id=category_id,
         owner_id=owner_id
     )
@@ -179,30 +195,41 @@ def newProduct(name, description, price, category_id, owner_id):
         return None
 
 
-def editProduct(id, name, price, description, category_id, owner_id):
-    edit = session.query(Product).filter_by(id=id)
-    if any(edit):
-        edit = edit.one()
-        print edit
-        edit.name = name
-        edit.description = description
-        edit.category_id = category_id
-        edit.owner_id = owner_id
-        session.add(edit)
+def editProduct(product, new_name, new_price, new_description):
+    """Rename category, stripped and name must not be empty string
+    Keyword Arguments:
+
+    product -- SQLalchemy Mapping Product
+    new_name     -- string
+    new_price -- string
+    new_description -- string
+    """
+    # edit = session.query(Product).filter_by(id=id)
+    if product:
+        product.name = new_name
+        product.description = new_description
+        product.price = new_price
+        # edit.category_id = category_id
+        # edit.owner_id = owner_id
+        # session.add(edit)
         session.commit()
-        print "##Edit MenuItem (%s) successful" % id
+        print "##Edit Product (%s) successful" % new_name
+        return True
     else:
-        print "##Edit MenuItem (%s) NOT successful" % id
+        print "##Edit Product (%s) NOT successful" % new_name
+        return False
 
 
-def deleteProduct(id):
-    delete = session.query(Product).filter_by(id=id)
-    if any(delete):
-        session.delete(delete.one())
+def deleteProduct(product):
+    # delete = session.query(Product).filter_by(id=id)
+    if product:
+        session.delete(product)
         session.commit()
-        print "delete MenuItem (%s) successful" % id
+        print "Product Delete successful"
+        return True
     else:
-        print "delete MenuItem (%s) NOT successful" % id
+        print "Product Delete NOT successful"
+        return False
 
 
 def createUser(username, email, picture):

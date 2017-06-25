@@ -2,51 +2,60 @@
 
 {% block content %}
 <form method="post">
-<div class="row">
-	<div class="col-md-12">Path:{{path}}</div>
-</div>
-<div class="row">
-	<div class="col-md-6">
-		<div class="form-group">
-			<label for="name">Name:</label>
-			<input id="name" type="text" name="name" placeholder="name"><br>
-		</div>
-		<div class="form-group">
+	<div class="row">
+		<div class="col-md-12">Path:{{path}}</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="form-group">
+				<label for="name">Name:</label>
+				<input id="name" type="text" name="name" value="{{product.name if product}}" placeholder="name"><br>
+			</div>
+<!-- 		<div class="form-group">
 			<label for="description">Description:</label>
 			<input id="description" type="text" name="description" placeholder="description">
-		</div>
-	    <div class="form-group">
-			<label for="inputFile">File input</label>
-	 		<input type="file" class="form-control-file" id="inputFile" aria-describedby="fileHelp">
-<!-- 	  	    <small id="fileHelp" class="form-text text-muted">This is some placeholder</small> -->
-		</div>
-	    <div class="form-group">
-			<label for="price">Price</label>
-	 		<input name="price" type="text" id="price" aria-describedby="fileHelp">
-<!-- 	  	    <small id="fileHelp" class="form-text text-muted">This is some placeholder</small> -->
-		</div>
-	</div>
-	<div class="col-md-6"><img id="image" style="width:200px;height: 200px" src="http://placehold.it/200x200"></div>
-</div>
-<div class = "row">
-	<div class="col-md-12"><textarea id="note" rows="10" cols="75" style="width: 100%"></textarea></div>
-</div>
-    <button type="submit" class="btn btn-primary">Submit</button>
- 	<a href="{{request.referrer}}"><button type="button">Cancel</button></a>
+		</div> -->
+<!-- 			<div class="form-group">
+				<label for="inputFile">File input</label>
+				<input type="file" class="form-control-file" id="inputFile" aria-describedby="fileHelp">
+		  	    <small id="fileHelp" class="form-text text-muted">This is some placeholder</small>
+			</div> -->
+<!-- 			<div class="form-group">
+				<label for="category">Category</label>
+				<input type="text" id="category" name="category" value="{{product.category.name.capitalize() if product}}" aria-describedby="fileHelp">
+					  	    <small id="fileHelp" class="form-text text-muted">This is some placeholder</small>
+			</div> -->
+			<div class="form-group">
+				<label for="price">Price</label>
+				<input name="price" type="text" id="price" name="price" value="{{product.price if product}}" aria-describedby="fileHelp">
+				<!-- 	  	    <small id="fileHelp" class="form-text text-muted">This is some placeholder</small> -->
+			</div>
 
-<button type="button">DELETE</button>
-</form>
+			<div class = "form-group">
+				<label for="description">Description</label>
+				<div class="col-md-12"><textarea id="description" name="description" rows="10" cols="75" style="width: 100%">{{product.description if product}}</textarea></div>
+			</div>
+
+
+		</div>
+	<!-- 	<div class="col-md-6"><img id="image" style="width:200px;height: 200px" src="http://placehold.it/200x200"></div> -->
+</div>
+<button type="submit" class="btn btn-primary">Submit</button>
+<a href="{{request.referrer}}"><button type="button">Cancel</button></a>
+<a href="../delete">Delete</a>
+<!-- <button type="button" onclick="confirm('Do you want to delete the product?')">DELETE</button>
+ --></form>
 <script>
-document.getElementById("inputFile").onchange = function () {
-    var reader = new FileReader();
+//	document.getElementById("inputFile").onchange = function () {
+//		var reader = new FileReader();
 
-    reader.onload = function (e) {
+//		reader.onload = function (e) {
         // get loaded data and render thumbnail.
-        document.getElementById("image").src = e.target.result;
-    };
+//        document.getElementById("image").src = e.target.result;
+//    };
 
     // read the image file as a data URL.
-    reader.readAsDataURL(this.files[0]);
-};
+//    reader.readAsDataURL(this.files[0]);
+//};
 </script>
 {% endblock %}
