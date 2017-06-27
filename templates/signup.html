@@ -11,7 +11,7 @@
 
 	Name:<input type="text" name="username" value="{{username}}" placeholder="Name">
 	<br>
-	<label>Hint: Use at lease 8 digits, use at least an upper case letter, a lower case letter and a number.</label>
+	<label>Hint: Use 2 - 20 characters, letters and numbers only</label>
 	<br>
 	<label class="error">&nbsp{{error_username}}</label>
 	<br>
@@ -19,14 +19,14 @@
 
 	Password:<input type="password" name="password" value="" placeholder="Password">
 	<br>
-	<label>Hint: Use at lease 8 digits, use at least an upper case letter, a lower case letter and a number.</label>
+	<label>Hint: Use 8 - 20 digits</label>
 	<br>
 	<label class="error">&nbsp{{error_password}}</label>
 	<br>
 
 	Verification:<input type="password" name="verify" value="" placeholder="Repeat Password">
 	<br>
-	<label>Hint: Use at lease 8 digits, use at least an upper case letter, a lower case letter and a number.</label>
+	<label>Hint: Repeat the password</label>
 	<br>
 	<label class="error">&nbsp{{error_verify}}</label>
 	<br>

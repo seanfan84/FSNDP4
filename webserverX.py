@@ -56,13 +56,27 @@ def authorization(f):
     def decorated_func(*args, **kwargs):
         product_name = kwargs['product_name']
         product = crud.getProductByName(product_name)
-        if login_session['user_id'] != product.owner_id:
+        if login_session['email'] == 'admin@catalogapp.com':
+            return f(*args, **kwargs)
+        elif login_session['user_id'] != product.owner_id:
             return 'Must be the item owner to view, \
             Click <a href="%s">Here</a> to go back' % (
                 request.referrer)
         else:
             return f(*args, **kwargs)
     return decorated_func
+
+
+def adminOnly(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        if 'email' in login_session and \
+           login_session['email'] == 'admin@catalogapp.com':
+            return f(*args, **kwargs)
+        else:
+            return 'Must login using admin@catalogapp.com to view, \
+            Click <a href="%s">Here</a> to go back' % (
+                request.referrer)
 
 
 # Experiment Function (OBSOLETED BY authorization wrapper)
@@ -165,7 +179,42 @@ def logout():
         httplib2.Http().request(url, 'DELETE')
     elif 'provider' in login_session and login_session['provider'] == 'google':
         print ">>Google disconnect"
+        credentials = login_session['credentials']
+        if not credentials:
+            response = make_response(
+                json.dumps('Current user not connected.'), 401
+            )
+            response.headers['Content-Type'] = 'application/json'
+            return response
+        credentials = json.loads(credentials)
+        token = credentials['access_token']
+        print token
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % token
+        print url
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[0]
 
+        print result
+        if result.status == 200:
+            del login_session['provider']
+            del login_session['provider_id']
+            del login_session['credentials']
+            del login_session['email']
+            del login_session['username']
+            del login_session['picture']
+            del login_session['user_id']
+
+            # response = make_response(json.dumps('Successfully disconnected'),
+            #                          200)
+            # response.headers['Content-Type'] = 'application/json'
+            flash("Logged out from google")
+            return redirect(url_for('showHome'))
+        else:
+            # response = make_response(json.dumps(
+            #     'Failed to revoke token for given user'), 400)
+            # response.headers['Content-Type'] = 'application/json'
+            flash("Failed to logout from google, try again later")
+            return redirect(url_for('showHome'))
     else:
         del login_session['username']
         del login_session['email']
@@ -254,7 +303,7 @@ def gconnect():
 
     # Store the access token in the session for later use.
     login_session['credentials'] = credentials.to_json()
-    login_session['gplus_id'] = gplus_id
+    login_session['provider_id'] = gplus_id
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -271,7 +320,7 @@ def gconnect():
         login_session['email'],
         login_session['username'],
         login_session['picture'])
-
+    generalData['login_session'] = login_session
     # output = ''
     # output += '<h1>Welcome, '
     # output += login_session['username']
@@ -456,6 +505,9 @@ def showProductDetail(product_id, product_name, category_name):
        'user_id' in login_session and\
        product.owner_id == login_session['user_id']:
         isOwner = True
+    elif 'email' in login_session and \
+         login_session['email'] == 'admin@catalogapp.com':
+        isOwner = True
     loadCategories()
     return render_template(
         "productDetail.html", product=product, isOwner=isOwner, **generalData
@@ -506,9 +558,7 @@ def editProduct(category_name, product_name, **kwargs):
 
     if request.method == 'POST':
         product = crud.getProductByName(product_name)
-        if product and\
-           category_name == product.category.name and\
-           authorization2(product):
+        if product and category_name == product.category.name:
 
             name = request.form['name']
             description = request.form['description']

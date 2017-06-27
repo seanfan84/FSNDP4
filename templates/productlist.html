@@ -2,13 +2,21 @@
 
 {% block content %}
 <div class="row">
-	<div class="col-xs-12 col-md-12">
+	<div class="col-xs-4 col-md-4">
 	{%if 'username' in login_session%}
 		<a href="{{url_for('newProduct',category_name=category_name)}}">
 			<button>New Product</button>
 		</a>
 	{%endif%}
 	</div>
+	{%if 'email' in login_session and login_session['email']=='admin@catalogapp.com'%}
+	<div class="col-xs-4 col-md-4">
+		<a href="{{url_for('editCategory',category_name=category_name)}}">
+			<button>Edit Category</button>
+		</a>
+	</div>
+	{%endif%}
+
 </div>
 {%- for entry in products -%}
 <div class="col-md-12">

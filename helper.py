@@ -31,7 +31,7 @@ def valid_username(username):
     return username and USER_RE.match(username)
 
 
-PASS_RE = re.compile(r"^.{3,20}$")
+PASS_RE = re.compile(r"^.{8,20}$")
 
 
 def valid_password(password):

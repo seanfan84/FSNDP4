@@ -3,8 +3,8 @@
 {{title}}:
 <form method="post">
 	<input type="text" name="CategoryName" value ="{{category.name}}" placeholder="name"><br>
-	<input type="text" name="imageUrl" value="" placeholder="image url">200x150 pixels<br>
-	<textarea name="description" placeholder="description" rows="10" cols="75">{{category.description}}</textarea>  <br>
+<!-- 	<input type="text" name="imageUrl" value="" placeholder="image url">200x150 pixels<br>
+	<textarea name="description" placeholder="description" rows="10" cols="75">{{category.description}}</textarea>  <br> -->
 	<input type="submit"><a href="{{request.referrer}}">Cancel</a>
 	{% if delete == true%}
 	<a href="{{url_for('deleteCategory', category_name=category.name)}}">Delete</a>
