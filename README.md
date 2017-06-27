@@ -29,10 +29,10 @@ cd /vagrant/fsndp4
 ```
 
 ### Running on localhost
-if you are running localhost on port 5000
+if you are running localhost on port 8000
 your starting page will be:
 
-* [http://localhost:5000/](http://localhost:5000/)
+* [http://localhost:8000/](http://localhost:8000/)
 
 ## Viewing as Admin
 The database has been pre configured to have an admin user.
