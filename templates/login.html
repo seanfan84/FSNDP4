@@ -23,17 +23,33 @@
 
 
 {%block content%}
+<h2>User Sign IN</h2>
+<br>
 <form method="post">
- Username:<input type = "text" name = "username" value = "{{username}}" placeholder="username"><br>
- Password:<input type = "password" name = "password" va;ue = "" placeholder = "password"><br>
- <input type="submit" name="" value = "Login">
- <a href="/signup">
-  <button type="button">Sign Up</button>
-</a>
+  <input type = "hidden" name = state value = {{state}}>
+  <table>
+    <tr>
+      <td>Email:</td>
+      <td><input type = "text" name = "email" value = "{{email}}" placeholder="Email"></td>
+    </tr>
+    <tr>
+      <td>Password:</td>
+      <td><input type = "password" name = "password" va;ue = "" placeholder = "password"></td>
+    </tr>
+    <tr><td>&nbsp</td></tr>
+    <tr> 
+      <td><input type="submit" name="" value = "Login"></td>
+      <td><a href="/signup"><button type="button">Sign Up</button></a></td>
+      <td><a href="/"><button type="button">Browse as guest</button></a></td>
+    </tr>
+  </table>
 </form>
 
 
+<br>
+<STRONG>Or Third Party Sign In</STRONG><br>
 
+<hr>
 <!-- 	Sign In With GOOGLE -->
 
 

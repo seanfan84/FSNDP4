@@ -119,7 +119,8 @@ def deleteCategoryByName(name):
                     session.delete(each)
             session.delete(delete)
             session.commit()
-            print "Success: delete category (%s) and its containing products successful" % (name)
+            print "Success: delete category (%s) and its\
+             containing products successful" % (name)
             return True
         else:
             print "Failure: Category (%s) NOT found" % (name)
@@ -174,7 +175,7 @@ def getProductByName(name):
 
 
 def newProduct(name, description, price, category_id, owner_id):
-    '''name description category_id owner_id'''
+    '''name description price category_id owner_id'''
     if (not name) or name.strip() == '':
         return None
     new = Product(
@@ -232,27 +233,25 @@ def deleteProduct(product):
         return False
 
 
-def createUser(username, email, picture):
+def createUser(username, email, password, picture=''):
     if username and email:
-        user = User(username=username, email=email, picture=picture)
+        user = User(username=username, email=email,
+                    password=password, picture=picture)
         session.add(user)
         session.commit()
     return user
 
 
 def getUserByEmail(email):
-    user = session.query(User).filter_by(email=email)
-    if any(user):
-        user = user.one()
+    try:
+        user = session.query(User).filter_by(email=email).one()
         return user
+    except Exception:
+        return None
 
 
-def getUserByID(user_id):
-    user = session.query(User).filter_by(id=user_id).one()
-    return user
+# OBSOLETE CODE
 
-
-# TEST:
-# print newRestaurant("123")
-# print editRestaurant(3, "456")
-# showRestaurants()
+# def getUserByID(user_id):
+#     user = session.query(User).filter_by(id=user_id).one()
+#     return user

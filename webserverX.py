@@ -15,7 +15,7 @@ from oauth2client.client import FlowExchangeError
 import requests
 
 import crud
-import falsedata
+import helper
 
 app = Flask(__name__)
 app.secret_key = 'some_secret'
@@ -23,31 +23,29 @@ app.secret_key = 'some_secret'
 generalData = {}
 categories = {}  # falsedata.categories
 
+
 # LOGIN
 def checkUser(email, name, picture):
-    print "--------CHECKING USER-------------"
-    # user_id = crud.getUserId(login_session['email'])
-
-    # if user_id:
-    #     print ">>Existing User"
-    #     user = crud.getUserInfo(user_id)
-    # else:
-    #     print ">>New User"
-    #     user = crud.createUser(
-    #         name=login_session['username'],
-    #         email=login_session['email'],
-    #         picture=login_session['picture']
-    #     )
-    # return user.id
-    return 1
+    user = crud.getUserByEmail(email)
+    if user:
+        return user.id
+    else:
+        user = crud.createUser(
+            username=login_session['username'],
+            email=login_session['email'],
+            password="",
+            picture=login_session['picture']
+        )
+        return user.id
 
 
 # SECURITY
-def autentication(f):
+def authentication(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         if 'username' not in login_session:
-            return redirect(url_for('showLogin'))
+            flash("The page requires login!")
+            return redirect(url_for('login'))
         else:
             return f(*args, **kwargs)
     return decorated_func
@@ -56,44 +54,100 @@ def autentication(f):
 def authorization(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        if 'user_id' not in login_session:
-            return redirect(url_for('showLogin'))
-        elif login_session['user_id'] != owner_id:
-            return 'Not Autherized, Click <a href="%s">Here</a> to go back' % (
+        product_name = kwargs['product_name']
+        product = crud.getProductByName(product_name)
+        if login_session['user_id'] != product.owner_id:
+            return 'Must be the item owner to view, \
+            Click <a href="%s">Here</a> to go back' % (
                 request.referrer)
         else:
             return f(*args, **kwargs)
     return decorated_func
 
 
-@app.route('/google')
-def testgoogle():
-    state = "".join(
-        random.choice(
-            string.ascii_uppercase + string.digits
-        )
-        for x in xrange(32))
-    login_session['state'] = state
-    return render_template("google.html", state=state)
+# Experiment Function (OBSOLETED BY authorization wrapper)
+# def authorization2(product):
+#     if product.owner_id == login_session['user_id']:
+#         return True
+#     elif login_session['email'] == 'admin@catalogapp.com':
+#         return True
+#     else:
+#         return False
 
 
-@app.route('/login')
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
-    state = "".join(
-        random.choice(
-            string.ascii_uppercase + string.digits
-        )
-        for x in xrange(32))
-    login_session['state'] = state
-    return render_template("login.html", state=state)
+    if request.method == 'GET':
+        if 'email' in login_session:
+            return redirect(url_for('showHome'))
+        state = "".join(
+            random.choice(
+                string.ascii_uppercase + string.digits
+            )
+            for x in xrange(32))
+        login_session['state'] = state
+        return render_template("login.html", state=state)
+    if request.method == 'POST':
+        if 'email' in login_session:
+            print login_session['email'], login_session['username']
+            return redirect(url_for('showHome'))
+        if request.form['state'] != login_session['state']:
+            return redirect(url_for('login'))
+        user = crud.getUserByEmail(request.form['email'])
+        if user and helper.valid_pw(
+            request.form['email'],
+            request.form['password'], user.password
+        ):
+            login_session['user_id'] = user.id
+            login_session['email'] = user.email
+            login_session['username'] = user.username
+            generalData['login_session'] = login_session
+            print "user logged in as %s !" % (login_session['username'])
+            return redirect(url_for('showHome'))
+        else:
+            flash("Incorrect email or password")
+            return redirect(url_for('login'))
 
 
-@app.route('/signup')
+@app.route('/signup/', methods=['GET', 'POST'])
 def signup():
-    return render_template("signup.html")
+    if request.method == 'GET':
+        return render_template("signup.html")
+
+    if request.method == 'POST':
+        have_error = False
+        email = request.form['email']
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        params = dict(email=email, username=username)
+
+        if not helper.valid_email(email):
+            have_error = True
+            params['error_email'] = 'Not valid email'
+        if not helper.valid_username(username):
+            have_error = True
+            params['error_username'] = 'Not valid username'
+        if not helper.valid_password(password):
+            have_error = True
+            params['error_password'] = 'Not valid password'
+        if password != verify:
+            have_error = True
+            params['error_verify'] = 'The password is \
+            not as same as verification'
+
+        if have_error:
+            return render_template('signup.html', **params)
+        else:
+            h = helper.make_pw_hash(email, password)
+            crud.createUser(username, email, h)
+            return redirect(url_for('login'))
+        return redirect(url_for('showHome'))
 
 
-@app.route('/logout')
+@app.route('/logout/')
+@authentication
 def logout():
     if 'provider' in login_session and login_session['provider'] == 'facebook':
         print ">>Facebook disconnect"
@@ -109,14 +163,24 @@ def logout():
         del login_session['picture']
         del login_session['user_id']
         httplib2.Http().request(url, 'DELETE')
-    if 'provider' in login_session and login_session['provider'] == 'google':
-        pass
+    elif 'provider' in login_session and login_session['provider'] == 'google':
+        print ">>Google disconnect"
+
+    else:
+        del login_session['username']
+        del login_session['email']
+        del login_session['user_id']
+        # del generalData['login_session']
     return redirect(url_for('showHome'))
 
 
 @app.route('/gconnect', methods=['post'])
 def gconnect():
-    print 'gconnect'
+    if 'email' in login_session:
+        flash("You have signed in. Log out if you wish to sign in with a \
+              different account."
+              )
+        return redirect(url_for('showHome'))
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -223,12 +287,12 @@ def gconnect():
 
 @app.route('/fbconnect', methods=['post'])
 def fbconnect():
-    # if 'provider' in login_session:
-    #     flash("You have signed in with your" + login_session['provider'] +
-    #         "account. Log out if you with to sign in with a different account."
-    #         )
-    #     return redirect(url_for('showRestaurants'))
-    print "fbconnect"
+    if 'email' in login_session:
+        flash("You have signed in. Log out if you wish to sign in with a \
+              different account."
+              )
+        return redirect(url_for('showHome'))
+
     if request.args.get('state') != login_session['state']:
         print 'not equal'
         response = make_response('Invalid state parameter.', 401)
@@ -288,18 +352,21 @@ def fbconnect():
         login_session['email'],
         login_session['username'],
         login_session['picture'])
+    generalData['login_session'] = login_session
     print ">>>>facebook_id: ", login_session['provider_id']
     return 'success'
 
 
 @app.route("/")
 def showHome():
-    for i in login_session:
-        print str(i) + ":" + str(login_session[i])
-    return render_template("base.html", categories=loadCategories())
+    # for i in login_session:
+    #     print str(i) + ":" + str(login_session[i])
+    loadCategories()
+    return render_template("base.html", **generalData)
 
 
 @app.route('/category/new/', methods=['get', 'post'])
+@authentication
 def newCategory():
     # return "This page will be for making a new category"
     if request.method == 'GET':
@@ -317,6 +384,7 @@ def newCategory():
 
 
 @app.route("/<string:category_name>/edit/", methods=['GET', 'POST'])
+@authentication
 def editCategory(category_name):
     print category_name
     if request.method == 'GET':
@@ -335,6 +403,7 @@ def editCategory(category_name):
 
 
 @app.route("/<string:category_name>/delete/", methods=['GET', 'POST'])
+@authentication
 def deleteCategory(category_name):
     # return "This page will be for deleting category %s" % category_id
     if request.method == 'GET':
@@ -371,9 +440,9 @@ def showProducts(category_name, category_id):
                            category_id=category_id, **generalData)
 
 
-@app.route("/<string:category_name>/<string:product_name>",
+@app.route("/<string:category_name>/<string:product_name>/",
            defaults={"product_id": 0})
-@app.route("/product/<int:product_id>",
+@app.route("/product/<int:product_id>/",
            defaults={"product_name": None, "category_name": None})
 def showProductDetail(product_id, product_name, category_name):
     # return "This page is the menu for category %s" % category_id
@@ -382,18 +451,26 @@ def showProductDetail(product_id, product_name, category_name):
         product = crud.getProductById(product_id)
     else:
         product = crud.getProductByName(product_name)
+    isOwner = False
+    if product and\
+       'user_id' in login_session and\
+       product.owner_id == login_session['user_id']:
+        isOwner = True
     loadCategories()
     return render_template(
-        "productDetail.html", product=product, **generalData
+        "productDetail.html", product=product, isOwner=isOwner, **generalData
     )
 
 
 @app.route("/<string:category_name>/product/new/",
            methods=['get', 'post'])
+@authentication
 def newProduct(category_name):
     # return "This page is for making a new \
     # menu item for category %s" % category_id
     if request.method == 'GET':
+        generalData['category_name'] = category_name
+        loadCategories()
         return render_template("productEdit.html", **generalData)
     if request.method == 'POST':
         category = crud.getCategoryByName(category_name)
@@ -401,7 +478,8 @@ def newProduct(category_name):
             name = request.form['name']
             description = request.form['description']
             price = request.form['price']
-            new = crud.newProduct(name, description, price, category.id, 1)
+            new = crud.newProduct(name, description, price,
+                                  category.id, login_session['user_id'])
             if new:
                 flash('Product Item Created')
             else:
@@ -413,28 +491,39 @@ def newProduct(category_name):
 
 @app.route("/<string:category_name>/<string:product_name>/edit/",
            methods=['get', 'post'])
-def editProduct(category_name, product_name):
+@authentication
+@authorization
+def editProduct(category_name, product_name, **kwargs):
     if request.method == 'GET':
+        generalData['category_name'] = category_name
+        loadCategories()
         product = crud.getProductByName(product_name)
-        if not product or category_name != product.category.name:
+        if product and category_name == product.category.name:
+            return render_template("productEdit.html",
+                                   product=product, **generalData)
+        else:
             return redirect(url_for("showError"))
-        return render_template("productEdit.html",
-                               product=product,
-                               **generalData)
+
     if request.method == 'POST':
         product = crud.getProductByName(product_name)
-        if not product or category_name != product.category.name:
+        if product and\
+           category_name == product.category.name and\
+           authorization2(product):
+
+            name = request.form['name']
+            description = request.form['description']
+            price = request.form['price']
+            crud.editProduct(product, name, price, description)
+            flash('Product Item Successfully Edited')
+            return redirect(url_for('showProducts',
+                                    category_name=category_name))
+        else:
             return redirect(url_for("showError"))
-        name = request.form['name']
-        description = request.form['description']
-        price = request.form['price']
-        crud.editProduct(product, name, price, description)
-        flash('Product Item Successfully Edited')
-        return redirect(url_for('showProducts', category_name=category_name))
 
 
 @app.route("/<string:category_name>/<string:product_name>/delete/",
            methods=['get', 'post'])
+@authentication
 def deleteProduct(category_name, product_name):
     if request.method == 'GET':
         product = crud.getProductByName(product_name)
@@ -456,18 +545,21 @@ def deleteProduct(category_name, product_name):
 
 # Define API End Point
 @app.route("/categories/json/")
+@authentication
 def showCategoriesJason():
     category = crud.getAllCategories()
     return jsonify(category=[r.serialize for r in category])
 
 
 @app.route("/<string:category_name>/products/json/")
+@authentication
 def showProductsJson(category_name):
     products = crud.showProductsByCategoryName(category_name)
     return jsonify(products=[i.serialize for i in products])
 
 
 @app.route("/<string:category_name>/<string:product_name>/json/")
+@authentication
 def showProductDetailJson(category_name, product_name):
     item = crud.getProductByName(product_name)
     print item.owner_id

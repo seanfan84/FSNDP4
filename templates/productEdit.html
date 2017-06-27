@@ -41,8 +41,10 @@
 	<!-- 	<div class="col-md-6"><img id="image" style="width:200px;height: 200px" src="http://placehold.it/200x200"></div> -->
 </div>
 <button type="submit" class="btn btn-primary">Submit</button>
-<a href="{{request.referrer}}"><button type="button">Cancel</button></a>
+<a href="{{url_for('showProducts',category_name=category_name)}}"><button type="button">Cancel</button></a>
+{%if request.path != url_for('newProduct',category_name=category_name)%}
 <a href="../delete">Delete</a>
+{%endif%}
 <!-- <button type="button" onclick="confirm('Do you want to delete the product?')">DELETE</button>
  --></form>
 <script>

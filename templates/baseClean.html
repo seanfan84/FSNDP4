@@ -20,13 +20,30 @@
 
 	<div class="container">
 		<div class="row">
-			<div class="col-md-12"><a href="/">BANNER</a></div>
-		</div>
-
-		<div class="row" id="header">
-			<div class="col-md-8">Headers</div>
-			<div class="col-md-4">Search</div>
-
+			<div class="col-md-8 col-xs-8"><a href="/">CATALOG APP</a></div>
+			<div class="col-md-4 col-xs-4">
+			{%if 'user' in login_session %}
+			<a href="/logout">Logout</a>
+			{%else%}
+			<a href="/login">Login/Sign Up</a><!-- &nbsp&nbsp&nbsp<a href="/signup">Sign Up</a> -->
+			{%endif%}
+				
+			</div>
+		</div>	
+		<div class='row'>
+			<div class='col-md-12'>
+				<div class = 'flash'>
+					{%- with messages = get_flashed_messages() -%}
+				        {%- if messages -%}
+				        <ul>
+				    		{%- for message in messages -%}
+				            <li> <strong> {{ message }} </strong> </li>
+				        	{%- endfor -%}
+				        </ul>
+				        {%- endif -%}
+				    {%- endwith -%}
+				</div>
+			</div>
 		</div>
 
 

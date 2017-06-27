@@ -3,9 +3,11 @@
 {% block content %}
 <div class="row">
 	<div class="col-xs-12 col-md-12">
+	{%if 'username' in login_session%}
 		<a href="{{url_for('newProduct',category_name=category_name)}}">
 			<button>New Product</button>
 		</a>
+	{%endif%}
 	</div>
 </div>
 {%- for entry in products -%}

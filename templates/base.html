@@ -28,12 +28,13 @@
 
 <div class="container">
 	<div class="row">
-		<div class="col-md-8 col-xs-8"><a href="/">CATALOG APP</a></div>
+		<div class="col-md-8 col-xs-8"><a href="/"><strong>CATALOG APP</strong></a></div>
 		<div class="col-md-4 col-xs-4">
-		{%if 'user' in login_session %}
-		<a href="/logout">Logout</a>
+
+		{%if 'username' in login_session %}
+		Welcome, {{login_session['username']}}&nbsp<a href="/logout/">Logout</a>
 		{%else%}
-		<a href="/login">Login</a>
+		<a href="/login/"><strong>Login/Sign Up</strong></a><!-- &nbsp&nbsp&nbsp<a href="/signup">Sign Up</a> -->
 		{%endif%}
 			
 		</div>
@@ -60,11 +61,11 @@
 			Welcome to Engineering Algorithms<br>
 			Engineering Algoritms is a state of art automatic building design system.<!--  powder by artificial intelligence. --><br>
 
-			Please select category to get started.
+			Please select category to get started.<br>
+		{%if not 'username' in login_session %}
 			You need to <a href="/login">login</a>  to see more details or to create new building types.
+		{%endif%}
 
-			TODO:
-			implement casade delete
 			{% endblock %}
 			</div>
 		</div>

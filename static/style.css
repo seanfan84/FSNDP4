@@ -1,5 +1,5 @@
 *{
-	border:solid 1px red;
+	border:solid 1px blue;
 }
 
 div.desc{
@@ -17,4 +17,7 @@ div.desc{
     padding: 0px;
     position: relative;
 
+}
+.error{
+    color:red;
 }
