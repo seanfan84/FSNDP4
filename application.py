@@ -627,6 +627,7 @@ def showError():
     Click <a href="/">Here</a> to go to home page<br>\
     </pre>'
 
+
 def loadCategories():
     categories = crud.getAllCategories()
     if categories:
