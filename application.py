@@ -20,6 +20,7 @@ import helper
 app = Flask(__name__)
 app.secret_key = 'some_secret'
 
+
 generalData = {}
 categories = {}  # falsedata.categories
 
@@ -37,7 +38,7 @@ def checkUser(email, name, picture):
             picture=login_session['picture']
         )
         return user.id
-
+# 
 
 # SECURITY
 def authentication(f):
@@ -93,6 +94,7 @@ def adminOnly(f):
 def login():
     if request.method == 'GET':
         if 'email' in login_session:
+            print login_session['email'], login_session['username']
             return redirect(url_for('showHome'))
         state = "".join(
             random.choice(
@@ -410,7 +412,9 @@ def fbconnect():
 def showHome():
     # for i in login_session:
     #     print str(i) + ":" + str(login_session[i])
-    loadCategories()
+    loadGeneralData()
+    if not 'login_session' in generalData:
+    	generalData['login_session'] = login_session
     return render_template("base.html", **generalData)
 
 
@@ -419,7 +423,7 @@ def showHome():
 def newCategory():
     # return "This page will be for making a new category"
     if request.method == 'GET':
-        loadCategories()
+        loadGeneralData()
         return render_template(
             "categoryEdit.html", category=None,
             title="New Category", delete=False, **generalData)
@@ -438,7 +442,7 @@ def editCategory(category_name):
     print category_name
     if request.method == 'GET':
         category = crud.getCategoryByName(category_name)
-        loadCategories()
+        loadGeneralData()
         return render_template(
             "categoryEdit.html", category=category,
             title="EDIT Category", delete=True, **generalData)
@@ -484,7 +488,7 @@ def showProducts(category_name, category_id):
         products = crud.showProducts(category_id)
     else:
         products = crud.showProducts()
-    loadCategories()
+    loadGeneralData()
     return render_template("productlist.html", products=products,
                            category_id=category_id, **generalData)
 
@@ -508,7 +512,7 @@ def showProductDetail(product_id, product_name, category_name):
     elif 'email' in login_session and \
          login_session['email'] == 'admin@catalogapp.com':
         isOwner = True
-    loadCategories()
+    loadGeneralData()
     return render_template(
         "productDetail.html", product=product, isOwner=isOwner, **generalData
     )
@@ -522,7 +526,7 @@ def newProduct(category_name):
     # menu item for category %s" % category_id
     if request.method == 'GET':
         generalData['category_name'] = category_name
-        loadCategories()
+        loadGeneralData()
         return render_template("productEdit.html", **generalData)
     if request.method == 'POST':
         category = crud.getCategoryByName(category_name)
@@ -548,7 +552,7 @@ def newProduct(category_name):
 def editProduct(category_name, product_name, **kwargs):
     if request.method == 'GET':
         generalData['category_name'] = category_name
-        loadCategories()
+        loadGeneralData()
         product = crud.getProductByName(product_name)
         if product and category_name == product.category.name:
             return render_template("productEdit.html",
@@ -628,15 +632,17 @@ def showError():
     </pre>'
 
 
-def loadCategories():
+def loadGeneralData():
     categories = crud.getAllCategories()
     if categories:
         generalData['categories'] = categories
-
+        # generalData['login_session'] = login_session
     else:
         generalData['categories'] = {}
         categories = {}
     return categories
+
+
 
 
 if __name__ == '__main__':
